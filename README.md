@@ -9,5 +9,5 @@ Each folder pertains to a specific bioblitz, and all resources for that bioblitz
 Jessica C. Boles, Data Scientist, University of Belize Environmental Research Institute\
 
 ## Bioblitz Efforts:
-2024 Belize Bioblitz, iNaturalist
-2025 Belize Bioblitz, iNaturalist
+[2024 Belize Bioblitz]([url](https://www.inaturalist.org/projects/2024-belize-bioblitz)), iNaturalist\
+[2025 Belize Bioblitz]([url](https://www.inaturalist.org/projects/2025-belize-bioblitz-manatee-forest)), iNaturalist
