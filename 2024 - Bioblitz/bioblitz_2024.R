@@ -101,3 +101,44 @@ DE <- ggarrange(D, E, ncol = 2, nrow = 1, labels = c("D", "E"))
 FG <- ggarrange(F, G, ncol = 2, nrow = 1, labels = c("F", "G"))
 fig_surveys <- ggarrange(A, BC, DE, FG, ncol = 1, nrow = 4, labels = c("A", "", "", ""))
 ggsave("2024 - Bioblitz/fig_surveys.png", fig_surveys, height = 12, width = 10)
+
+## Create Rarefaction Curve ---------------------------------
+make_abundance_df <- function(df, group_var) {
+    df %>%
+        filter(!is.na(taxon_species_name)) %>%
+        group_by(across(all_of(group_var)), taxon_species_name) %>%
+        summarize(count = n())
+}
+df_inat_clean_class <- make_abundance_df(df_inat, "taxon_class_name")
+df_inat_clean_phylum <- make_abundance_df(df_inat, "taxon_phylum_name")
+df_inat_clean_kingdom <- make_abundance_df(df_inat, "taxon_kingdom_name")
+abundance_list <- list(
+    Birds = filter(df_inat_clean_class, taxon_class_name == "Aves")$count,
+    Insects = filter(df_inat_clean_class, taxon_class_name == "Insecta")$count,
+    Amphibians = filter(df_inat_clean_class, taxon_class_name == "Amphibia")$count,
+    Reptiles = filter(df_inat_clean_class, taxon_class_name == "Reptilia")$count,
+    Mammals = filter(df_inat_clean_class, taxon_class_name == "Mammalia")$count,
+    Fish = filter(df_inat_clean_class, taxon_class_name == "Actinopterygii")$count,
+    Arachnids = filter(df_inat_clean_class, taxon_class_name == "Arachnida")$count,
+    Molluscs = filter(df_inat_clean_phylum, taxon_phylum_name == "Mollusca")$count,
+    Plants = filter(df_inat_clean_kingdom, taxon_kingdom_name == "Plantae")$count,
+    Fungi = filter(df_inat_clean_kingdom, taxon_kingdom_name == "Fungi")$count
+)
+inext_all <- iNEXT(abundance_list, q = 0, datatype = "abundance")
+inext_all_gg <- fortify(inext_all, type = 1)
+transition_points <- inext_all_gg %>%
+    filter(Method == "Extrapolation") %>%
+    group_by(Assemblage) %>%
+    slice(1)
+
+# Create ggplot
+fig_rarefaction <- ggplot(inext_all_gg, aes(x = x, y = y, color = Assemblage)) +
+    geom_line() +
+    geom_ribbon(aes(ymin = y.lwr, ymax = y.upr, fill = Assemblage), alpha = 0.2) +
+    geom_point(data = transition_points, aes(x = x, y = y), shape = 8, size = 5, color = "black") +
+    labs(x = "Number of Individuals", y = "Species Richness") +
+    theme_classic() +
+    custom_theme +
+    scale_color_manual(values = palette) +
+    scale_fill_manual(values = palette)
+ggsave("2024 - Bioblitz/fig_rarefaction.png", fig_rarefaction, height = 8, width = 12)
